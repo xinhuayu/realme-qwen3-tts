@@ -18,8 +18,8 @@ off. Upstream's own README is kept as [README_UPSTREAM.md](README_UPSTREAM.md).
 
 ## What changed, and what it bought
 
-Measured on a 6-core, 12-thread Windows desktop (AVX2, no GPU), cloning a real
-voice, as **seconds of work per second of speech** (lower is faster; 1.0 is
+Measured on a small PC with a 6-core, 12-thread laptop processor (Intel i7-10710U, 15 W; 64 GB DDR4-2667; AVX2 build, no GPU),
+cloning a real voice, as **seconds of work per second of speech** (lower is faster; 1.0 is
 real time):
 
 | | 1 sentence at a time | 4 per pass | 8 per pass |
@@ -31,8 +31,18 @@ real time):
 | + 8-bit model | 1.77 | 1.35 | 1.30 |
 | + 32-bit vocoder (everything) | **1.49** | **1.07** | **1.02** |
 
-An hour of speech now takes about an hour of work on a desktop CPU, against
-almost four.
+An hour of speech now takes about an hour of work on that 15-watt laptop
+processor, against almost four. In RealMe Studio, a 51-slide, 52-minute
+lecture (564 sentences) recorded in 56 minutes on it, with the 8-bit model,
+4 sentences per pass and the 32-bit vocoder.
+
+**Other hardware.** The transformers' steps mostly wait on memory, so faster
+memory (DDR5, more channels) speeds them up; the vocoder is arithmetic, so
+more and faster cores speed that up. A desktop processor that holds a high
+clock under load should do better than this 15-watt chip, a smaller laptop
+worse. GPU builds have not been measured; the batch and vocoder changes are
+CPU-only and switch themselves off there, so whether a GPU is faster for this
+model on a given machine is for measuring.
 
 | Change | Sound | Default |
 |---|---|---|
@@ -140,7 +150,7 @@ int32_t qwen3_tts_synthesize_batch_with_embedding(
 /* n on success (free each out[i] with qwen3_tts_free_audio), -1 on failure */
 ```
 
-Four to eight per pass is the useful range on a desktop; each sentence in a
+Four to eight per pass is the useful range on such a PC; each sentence in a
 pass needs about 0.5 GB more for its caches.
 
 ## Licence and credit

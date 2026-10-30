@@ -4,7 +4,7 @@ The first standalone release of the local voice engine used by RealMe
 Studio: qwen3-tts.cpp (predict-woo, upstream `b3ba14077cf1`) on GGML
 `3af5f5760e19`, with RealMe's changes.
 
-**3.5 to 3.7 times as fast on a desktop CPU**: on a 6-core Windows machine,
+**3.5 to 3.7 times as fast on an ordinary CPU**: on a small 6-core Windows PC (a 15-watt laptop processor),
 cloning a real voice, 3.79 seconds of work per second of speech before, 1.07
 with four sentences per pass and 1.02 with eight -- about real time.
 

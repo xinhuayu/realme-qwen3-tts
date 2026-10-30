@@ -4,7 +4,7 @@
 MIT) runs Qwen3-TTS voice cloning in C++ on the **GGML** tensor library
 (https://github.com/ggml-org/ggml, MIT, the ggml authors). RealMe Studio uses
 it as its local voice engine, and changed it to run 3.5 to 3.7 times as fast
-on a desktop CPU with the same sound. This file lists every change, the
+on an ordinary CPU with the same sound. This file lists every change, the
 switch that turns it off, and how it was checked. The base is upstream commit
 `b3ba14077cf1` with GGML `3af5f5760e19`. The Qwen3-TTS weights are the Qwen
 team's and carry their own licence; nothing here changes them.
@@ -20,7 +20,7 @@ are already applied in the source; this file is its CHANGES.md.
 
 ## Results
 
-A 6-core, 12-thread Windows desktop (AVX2, no GPU), a real cloned voice;
+On a small PC with a 6-core, 12-thread laptop processor (Intel i7-10710U, 15 W; 64 GB DDR4-2667; AVX2 build, no GPU), a real cloned voice;
 seconds of work per second of speech (1.0 is real time):
 
 | | 1 at a time | 4 per pass | 8 per pass |
