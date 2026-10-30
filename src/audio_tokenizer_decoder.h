@@ -151,6 +151,12 @@ struct audio_decoder_model {
     ggml_backend_buffer_t realme_buffer = nullptr;
     std::map<const struct ggml_tensor *, struct ggml_tensor *> realme_f32;
     bool realme_on = false;   // this sentence is short enough for them
+
+    // RealMe (QWEN3_TTS_VOCODER_F32=2): the decoder stage's convolution
+    // weights in 32 bits, laid out for the channel-by-channel signal
+    struct ggml_context * realme2_ctx = nullptr;
+    ggml_backend_buffer_t realme2_buffer = nullptr;
+    std::map<const struct ggml_tensor *, struct ggml_tensor *> realme2_f32;
 };
 
 // Compute state for decoder
