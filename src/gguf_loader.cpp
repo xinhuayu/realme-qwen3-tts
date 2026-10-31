@@ -22,6 +22,25 @@ shared_backend_state & get_shared_backend_state() {
     return state;
 }
 
+// RealMe: one pool of worker threads for the shared CPU backend, kept for as
+// long as the backend (see CHANGES.md). QWEN3_TTS_POOL=0: none.
+ggml_threadpool * realme_pool = nullptr;
+
+void realme_pool_attach(ggml_backend_t backend, int n) {
+    const char * v = std::getenv("QWEN3_TTS_POOL");
+    if ((v && v[0] == '0') || realme_pool || n < 1) return;
+    struct ggml_threadpool_params p = ggml_threadpool_params_default(n);
+    realme_pool = ggml_threadpool_new(&p);
+    if (realme_pool) ggml_backend_cpu_set_threadpool(backend, realme_pool);
+}
+
+void realme_pool_release() {
+    if (realme_pool) {
+        ggml_threadpool_free(realme_pool);
+        realme_pool = nullptr;
+    }
+}
+
 enum class backend_mode {
     AUTO,
     CPU,
@@ -199,6 +218,7 @@ ggml_backend_t init_preferred_backend(const char * component_name, std::string *
             ggml_backend_cpu_set_n_threads(backend, n);
             fprintf(stderr, "  [backend] CPU threads: %d\n", n);
         }
+        realme_pool_attach(backend, n > 0 ? n : GGML_DEFAULT_N_THREADS);
     }
     if (backend) {
         shared.backend = backend;
@@ -218,6 +238,7 @@ void release_preferred_backend(ggml_backend_t backend) {
         shared.ref_count--;
         if (shared.ref_count <= 0) {
             ggml_backend_free(shared.backend);
+            realme_pool_release();
             shared.backend = nullptr;
             shared.ref_count = 0;
         }

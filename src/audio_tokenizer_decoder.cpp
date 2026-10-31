@@ -13,6 +13,7 @@
 #include "realme_vocoder.inc"
 #include "realme_snake.inc"
 #include "realme_vocoder2.inc"
+#include "realme_vocoder3.inc"
 
 namespace qwen3_tts {
 
@@ -382,6 +383,7 @@ bool AudioTokenizerDecoder::load_model(const std::string & model_path) {
         return false;
     }
     realme_vocoder_prepare(model_, state_.backend);
+    realme_voc3_prepare(model_, state_.backend);
     realme_voc2_prepare(model_, state_.backend);
 
     ggml_backend_dev_t device = ggml_backend_get_device(state_.backend);
@@ -814,7 +816,8 @@ struct ggml_cgraph * AudioTokenizerDecoder::build_graph(int32_t n_frames) {
      ggml_set_name(cur, "upsample_output");
      
      // RealMe (QWEN3_TTS_VOCODER_F32=2): the decoder stage without unrolled copies
-     struct ggml_tensor * realme_audio = realme_voc2_back(ctx0, model_, cur);
+     struct ggml_tensor * realme_audio = realme_voc3_back(ctx0, model_, cur);
+     if (!realme_audio) realme_audio = realme_voc2_back(ctx0, model_, cur);
      if (realme_audio) {
          cur = realme_audio;
      } else {
@@ -1046,6 +1049,15 @@ bool AudioTokenizerDecoder::decode(const int32_t * codes, int32_t n_frames,
 void free_audio_decoder_model(audio_decoder_model & model) {
     model.realme_f32.clear();
     model.realme2_f32.clear();
+    model.realme3_w.clear();
+    if (model.realme3_buffer) {
+        ggml_backend_buffer_free(model.realme3_buffer);
+        model.realme3_buffer = nullptr;
+    }
+    if (model.realme3_ctx) {
+        ggml_free(model.realme3_ctx);
+        model.realme3_ctx = nullptr;
+    }
     if (model.realme2_buffer) {
         ggml_backend_buffer_free(model.realme2_buffer);
         model.realme2_buffer = nullptr;

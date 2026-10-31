@@ -52,11 +52,20 @@
 // RealMe: GGML's tinyBLAS matrix multiply only for the products RealMe names
 // "realme_sgemm" (the vocoder's convolutions); every other product is
 // computed as upstream computes it. QWEN3_TTS_SGEMM=0 turns it off.
+// QWEN3_TTS_SGEMM_ALL=1 gives tinyBLAS every product it takes (opt-in: one
+// sentence and a pass then differ slightly).
+static int realme_sgemm_all = -1;
 static bool realme_sgemm(const struct ggml_tensor * dst) {
-    // Read each time (only for the few products so named): no shared
-    // state between the compute threads.
     const char * v;
-    if (strncmp(dst->name, "realme_sgemm", 12) != 0) return false;
+    if (strncmp(dst->name, "realme_sgemm", 12) != 0) {
+        // Read once per process. Every thread that reads it first stores the
+        // same value, so the unsynchronised store is harmless.
+        if (realme_sgemm_all < 0) {
+            v = getenv("QWEN3_TTS_SGEMM_ALL");
+            realme_sgemm_all = (v && v[0] == '1') ? 1 : 0;
+        }
+        return realme_sgemm_all == 1;
+    }
     v = getenv("QWEN3_TTS_SGEMM");
     return !(v && v[0] == '0');
 }
